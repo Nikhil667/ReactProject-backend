@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router();
 const User = require('../models/User')
 const { body, validationResult } = require('express-validator');
-// create a user using post endpoint api/auth
+// create a user using post endpoint api/auth/createuser
 // /no login required
 
 
@@ -16,14 +16,34 @@ router.post('/createuser',[
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
-    let user = await User.create({
+    //check whether the user with same email exists already
+    try {
+      
+    
+    let user = await User.findOne({email: req.body.email})
+    if(user){
+      return res.status(400).json({error : "Sorry a user with this email already exists"});
+    }
+    user = await User.create({
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
-      }).then(user => res.json(user))
-      .catch(err => {console.log(err)
-      res.json({error: "Please enter unique value for email", message: err.message})})
+    })
+      
+    res.json(user)  
+  } catch (error) {
+      console.log(error.message);
+      res.status(500).send("Some error occurred");
+  }
+
+      
+      
+      
+      
+      
+      //.then(user => res.json(user))
+      // .catch(err => {console.log(err)
+      // res.json({error: "Please enter unique value for email", message: err.message})})
 
 
 
